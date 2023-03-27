@@ -1,5 +1,4 @@
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow
 from PyQt5 import QtCore, QtWidgets
 import sys
 
@@ -7,6 +6,7 @@ import sys
 class GUI(QMainWindow):
 
     def __init__(self):
+
         super().__init__()
         self.__width = 600
         self.__height = 400
@@ -15,6 +15,7 @@ class GUI(QMainWindow):
         self.__setup_GUI()
 
     def __setup_GUI(self):
+
         self.setWindowTitle("lab1")
         self.resize(self.__width, self.__height)
 
@@ -30,6 +31,7 @@ class GUI(QMainWindow):
 
 
 if __name__ == '__main__':
+    
     app = QtWidgets.QApplication(sys.argv)
     gui = GUI()
     gui.show()

@@ -6,6 +6,7 @@ import sys
 class GUI(QMainWindow):
 
     def __init__(self):
+
         super().__init__()
         self.__width = 600
         self.__height = 400
@@ -14,6 +15,7 @@ class GUI(QMainWindow):
         self.__setup_GUI()
 
     def __setup_GUI(self):
+
         self.setWindowTitle("lab1")
         self.resize(self.__width, self.__height)
 
