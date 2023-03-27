@@ -19,6 +19,12 @@ class GUI(QMainWindow):
         self.setWindowTitle("lab1")
         self.resize(self.__width, self.__height)
 
+        self.__set_logs()
+        self.__set_IP()
+        self.__set_port()
+
+    def __set_logs(self):
+
         self.lbLog = QtWidgets.QLabel(self)
         self.lbLog.setGeometry(QtCore.QRect(60, 20, 100, 15))
         self.lbLog.setObjectName("lbLog")
@@ -29,9 +35,33 @@ class GUI(QMainWindow):
         self.teLog.setObjectName("teLog")
         self.teLog.setEnabled(False)
 
+    def __set_IP(self):
+
+        self.lbIP = QtWidgets.QLabel(self)
+        self.lbIP.setGeometry(QtCore.QRect(400, 20, 100, 15))
+        self.lbIP.setObjectName("lbIP")
+        self.lbIP.setText("IP")
+
+        self.teIP = QtWidgets.QTextEdit(self)
+        self.teIP.setGeometry(QtCore.QRect(400, 40, 100, 30))
+        self.teIP.setObjectName("teIP")
+        self.teIP.setEnabled(False)
+
+    def __set_port(self):
+
+        self.lbPort = QtWidgets.QLabel(self)
+        self.lbPort.setGeometry(QtCore.QRect(400, 75, 100, 15))
+        self.lbPort.setObjectName("lbPort")
+        self.lbPort.setText("Port")
+
+        self.tePort = QtWidgets.QTextEdit(self)
+        self.tePort.setGeometry(QtCore.QRect(400, 95, 100, 30))
+        self.tePort.setObjectName("tePort")
+        self.tePort.setEnabled(False)
+
 
 if __name__ == '__main__':
-    
+
     app = QtWidgets.QApplication(sys.argv)
     gui = GUI()
     gui.show()
