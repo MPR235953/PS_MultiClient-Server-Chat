@@ -1,5 +1,3 @@
-import random
-from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5 import QtCore, QtWidgets
@@ -86,7 +84,7 @@ class GUI(QMainWindow):
         self.teReceive.setObjectName("teReceive")
 
     def __set_status(self):
-        
+
         self.lbConnState = QtWidgets.QLabel(self)
         self.lbConnState.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.025 * self.__width), 100, 15))
         self.lbConnState.setObjectName("lbConnState")
@@ -99,6 +97,7 @@ class GUI(QMainWindow):
         self.teConnState.setTextColor(QColor(0, 0, 0))
 
     def __show_popup_fail(self):
+
         msg = QMessageBox(self)
         msg.setWindowTitle("Info")
         msg.setText("Connection failed")
@@ -107,6 +106,7 @@ class GUI(QMainWindow):
         msg.exec_()
 
     def __show_popup_success(self):
+
         msg = QMessageBox()
         msg.setWindowTitle("Info")
         msg.setText("Connection successful")
@@ -115,6 +115,7 @@ class GUI(QMainWindow):
         msg.exec_()
 
 if __name__ == '__main__':
+
     app = QtWidgets.QApplication(sys.argv)
     gui = GUI()
     gui.show()
