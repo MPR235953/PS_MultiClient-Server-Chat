@@ -1,16 +1,22 @@
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5 import QtCore, QtWidgets
 import sys
 
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5 import QtCore, QtWidgets
 
-class GUI(QMainWindow):
+class ServerGUI(QMainWindow):
 
     def __init__(self):
 
+        self.app = QtWidgets.QApplication(sys.argv)
         super().__init__()
         self.__width = 600
         self.__height = 400
         self.__perc = (0.1, 0.8)
+
+        self.teLog = None
+        self.teIP = None
+        self.tePort = None
 
         self.__setup_GUI()
 
@@ -34,6 +40,7 @@ class GUI(QMainWindow):
         self.teLog.setGeometry(QtCore.QRect(60, 40, 300, 300))
         self.teLog.setObjectName("teLog")
         self.teLog.setEnabled(False)
+        self.teLog.setTextColor(QColor(0, 0, 0))
 
     def __set_IP(self):
 
@@ -46,6 +53,7 @@ class GUI(QMainWindow):
         self.teIP.setGeometry(QtCore.QRect(400, 40, 100, 30))
         self.teIP.setObjectName("teIP")
         self.teIP.setEnabled(False)
+        self.teIP.setTextColor(QColor(0, 0, 0))
 
     def __set_port(self):
 
@@ -58,11 +66,4 @@ class GUI(QMainWindow):
         self.tePort.setGeometry(QtCore.QRect(400, 95, 100, 30))
         self.tePort.setObjectName("tePort")
         self.tePort.setEnabled(False)
-
-
-if __name__ == '__main__':
-
-    app = QtWidgets.QApplication(sys.argv)
-    gui = GUI()
-    gui.show()
-    sys.exit(app.exec_())
+        self.tePort.setTextColor(QColor(0, 0, 0))
