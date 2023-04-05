@@ -1,18 +1,18 @@
 import socket
-import sys
 import threading
 
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5 import QtCore, QtWidgets
 import sys
+import time
+
 from ServerGUI import ServerGUI
+from PyQt5 import QtWidgets
 
 
 class Server:
-    def __init__(self):
-        self.gui = ServerGUI()
-        self.__server_ip = 'localhost'
-        self.__server_port = 2137
+    def __init__(self, gui):
+        self.gui = gui
+        self.__server_ip = '127.0.0.1'
+        self.__server_port = 5000
         self.server_socket = None
         self.listener_thread = None
 
@@ -46,6 +46,7 @@ class Server:
 
                 # Receive the data in small chunks and retransmit it
                 while True:
+                    time.sleep(1)
                     data = connection.recv(16)
                     self.gui.teLog.append('received: ' + str(data))
                     if data:
@@ -58,6 +59,7 @@ class Server:
             finally:
                 # Clean up the connection
                 connection.close()
+                self.stop_listen()
 
 
     def __update_gui(self):
@@ -66,11 +68,15 @@ class Server:
 
 
 if __name__ == '__main__':
+    app = QtWidgets.QApplication(sys.argv)
+    gui = ServerGUI()
+    gui.show()
 
-    server = Server()
+    server = Server(gui)
     server.start_GUI()
     server.set_param()
     server.start_listen()
+    #server.stop_listen()
 
-    sys.exit(server.gui.app.exec_())
+    sys.exit(app.exec_())
 

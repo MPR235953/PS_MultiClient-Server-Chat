@@ -1,3 +1,4 @@
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5 import QtCore, QtWidgets
@@ -6,7 +7,6 @@ import sys
 from Client import Client
 
 class ClientGUI(QMainWindow):
-
     def __init__(self):
 
         super().__init__()
@@ -17,6 +17,7 @@ class ClientGUI(QMainWindow):
         self.__setup_GUI()
 
         self.client = Client()
+        self.client.sig_transfer.connect(self.__receive)
 
     def __setup_GUI(self):
 
@@ -85,7 +86,7 @@ class ClientGUI(QMainWindow):
         self.btnSend.setObjectName("btnSend")
         self.btnSend.setText("SEND")
         self.btnSend.setCheckable(True)
-        self.btnSend.clicked.connect(self.__show_popup_fail)
+        self.btnSend.clicked.connect(self.__send)
         self.btnSend.setDisabled(True)
 
     def __set_receive(self):
@@ -154,6 +155,16 @@ class ClientGUI(QMainWindow):
         msg = self.client.connect(server_ip=ip, server_port=port)
         if msg is not None: self.__show_popup_fail(msg=msg)
         else: self.__connection_GUI_setter(conn_status=True)
+
+    def __send(self):
+        msg = self.teSend.toPlainText()
+        self.client.send(msg)
+        self.teSend.setText("")  # clear QTextEdit after send
+
+    @pyqtSlot(str)
+    def __receive(self, msg: str):
+        self.teReceive.setText(msg)
+
 
 
 if __name__ == '__main__':

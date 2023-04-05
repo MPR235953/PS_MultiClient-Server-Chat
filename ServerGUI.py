@@ -8,7 +8,6 @@ class ServerGUI(QMainWindow):
 
     def __init__(self):
 
-        self.app = QtWidgets.QApplication(sys.argv)
         super().__init__()
         self.__width = 600
         self.__height = 400
