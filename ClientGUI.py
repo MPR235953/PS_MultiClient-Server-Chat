@@ -137,7 +137,8 @@ class ClientGUI(QMainWindow):
         popup.setStandardButtons(QMessageBox.Retry | QMessageBox.Ok)
         popup.setDefaultButton(QMessageBox.Retry)
         popup.exec_()
-
+        if popup.standardButton(popup.clickedButton()) == QMessageBox.Retry:
+            self.__connect()
     def __show_popup_success(self):
 
         msg = QMessageBox()
