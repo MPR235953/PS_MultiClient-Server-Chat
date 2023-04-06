@@ -55,6 +55,7 @@ class Client(QObject):
     sig_transfer = pyqtSignal(str)
     def __init__(self):
         super().__init__()
+        self.bytes = 16
         self.server_ip = None
         self.server_port = None
         self.client_socket = None
@@ -74,9 +75,10 @@ class Client(QObject):
 
     def listen(self):
         while True:
-            recv = self.client_socket.recv(16)
-            self.sig_transfer.emit(str(recv.decode("utf-8")))
-            break
+            recv = self.client_socket.recv(self.bytes)
+            recv_len = len(recv)
+            if recv_len > 0:
+                self.sig_transfer.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
 
 
 

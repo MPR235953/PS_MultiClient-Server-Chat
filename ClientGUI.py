@@ -10,6 +10,8 @@ class ClientGUI(QMainWindow):
     def __init__(self):
 
         super().__init__()
+        self.receiver_memory = ""
+
         self.__width = 700
         self.__height = 400
         self.__perc = (0.1, 0.8)
@@ -98,7 +100,7 @@ class ClientGUI(QMainWindow):
         self.lbReceive.setDisabled(True)
 
         self.teReceive = QtWidgets.QTextEdit(self)
-        self.teReceive.setGeometry(QtCore.QRect(320, 220, 200, 100))
+        self.teReceive.setGeometry(QtCore.QRect(320, 220, 360, 100))
         self.teReceive.setObjectName("teReceive")
         self.teReceive.setReadOnly(True)
         self.teReceive.setDisabled(True)
@@ -163,7 +165,9 @@ class ClientGUI(QMainWindow):
 
     @pyqtSlot(str)
     def __receive(self, msg: str):
-        self.teReceive.setText(msg)
+        self.receiver_memory += msg + '\n'
+        self.teReceive.setText(self.receiver_memory)
+        self.teReceive.verticalScrollBar().setValue(self.teReceive.verticalScrollBar().maximum())
 
 
 
