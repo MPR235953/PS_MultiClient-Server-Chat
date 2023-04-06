@@ -31,7 +31,7 @@ class Client(QObject):
     # TODO: consider a better way to terminate a listener thread ?
     def disconnect(self):
         self.__connection = False
-        self.__client_socket.sendall(str.encode('close'))
+        self.__client_socket.sendto(str.encode('close'), (self.__server_ip, self.__server_port))
         self.__client_socket.close()
         logger.info("Disconnected")
 

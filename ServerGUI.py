@@ -170,8 +170,14 @@ class ServerGUI(QMainWindow):
         self.__teTerminal.verticalScrollBar().setValue(self.__teTerminal.verticalScrollBar().maximum())
 
     @pyqtSlot(str)
-    def __update_clients(self, client: str):
-        self.__clients_memory += client
+    def __update_clients(self, input: str):
+        operation, client = input.split(',')
+        logger.info(operation)
+        logger.info(client)
+        logger.info(self.__clients_memory)
+        if operation == 'ADD': self.__clients_memory += client
+        elif operation == 'DEL': self.__clients_memory = self.__clients_memory.replace(client, '')
+        logger.info(self.__clients_memory)
         self.__teClients.setText(self.__clients_memory)
         self.__teClients.verticalScrollBar().setValue(self.__teClients.verticalScrollBar().maximum())
 

@@ -59,9 +59,10 @@ class Server(QObject):
                 "connection": connection
             }
             self.__client_list.append(client_data)
-            self.sig_terminal.emit(str("New client joined - #{} {}:{}").format(id, client_address[0], client_address[1]))
-            self.sig_clients.emit(str("#{} {}:{}").format(id, client_address[0], client_address[1]))
+            self.sig_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
+            self.sig_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
 
+    # TODO: maybe simplify ?
     def __transfer(self):
         logger.info("Server is ready to transfer data")
         while True:
@@ -69,8 +70,15 @@ class Server(QObject):
                 time.sleep(cfg['transfer_delay'])
                 data = client['connection'].recv(16)
                 decoded_data = data.decode('utf-8')
-                logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
-                client['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
+                if decoded_data != 'close':
+                    logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
+                    client['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
+                else:
+                    logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
+                    client['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data + ' disconnected').encode('utf-8'))
+                    self.sig_terminal.emit(str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
+                    self.sig_clients.emit(str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
+                    break
 
 
 
