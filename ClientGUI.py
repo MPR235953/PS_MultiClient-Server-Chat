@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5 import QtCore, QtWidgets
 import sys
 
-from Logger import logger
+from utils import logger
 from Client import Client
 
 class ClientGUI(QMainWindow):
@@ -112,6 +112,7 @@ class ClientGUI(QMainWindow):
         self.__teReceive.setReadOnly(True)
         self.__teReceive.setDisabled(True)
 
+    # TODO: rename
     def __set_status(self):
 
         self.__lbConnState = QtWidgets.QLabel(self)
@@ -124,6 +125,8 @@ class ClientGUI(QMainWindow):
         self.__teConnState.setObjectName("teConnState")
         self.__teConnState.setReadOnly(True)
 
+    # TODO: delete parameter
+    # TODO: rename
     def __connection_GUI_setter(self, connection) -> None:
         ''' Method to update client GUI, set it to connected or not connected view'''
         if not connection:
@@ -149,6 +152,7 @@ class ClientGUI(QMainWindow):
         self.__receiver_memory = ""
         self.__teReceive.setText(self.__receiver_memory)
 
+    # TODO: rename
     def __show_popup_fail(self, msg: str) -> None:
 
         popup = QMessageBox(self)
@@ -181,6 +185,7 @@ class ClientGUI(QMainWindow):
         self.__client.send(msg)
         self.__teSend.setText("")  # clear QTextEdit after send
 
+    # TODO: refactor this ?
     @pyqtSlot(str)
     def __receive(self, msg: str):
         self.__receiver_memory += msg + '\n'
