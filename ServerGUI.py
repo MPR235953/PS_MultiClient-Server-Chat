@@ -12,21 +12,23 @@ class ServerGUI(QMainWindow):
     def __init__(self):
         super().__init__()
         self.__terminal_memory = ""
+        self.__clients_memory = ""
         self.__active = False
 
-        self.__width = 700
+        self.__width = 800
         self.__height = 400
         self.__perc = (0.1, 0.8)
 
         self.__setup_GUI()
 
         self.__server = Server()
-        self.__server.sig_transfer.connect(self.__receive)
+        self.__server.sig_terminal.connect(self.__update_terminal)
+        self.__server.sig_clients.connect(self.__update_clients)
 
     def __setup_GUI(self):
 
         self.setWindowTitle("Server")
-        self.resize(self.__width, self.__height)
+        self.setGeometry(0, 0, self.__width, self.__height)
 
         self.__set_conn()
         self.__set_terminal()
@@ -99,7 +101,7 @@ class ServerGUI(QMainWindow):
         self.__lbTerminal.setText("Terminal")
 
         self.__teTerminal = QtWidgets.QTextEdit(self)
-        self.__teTerminal.setGeometry(QtCore.QRect(170, 40, 360, 340))
+        self.__teTerminal.setGeometry(QtCore.QRect(170, 40, 460, 340))
         self.__teTerminal.setObjectName("teTerminal")
         self.__teTerminal.setReadOnly(True)
 
@@ -111,7 +113,7 @@ class ServerGUI(QMainWindow):
         self.__lbClients.setText("Clients")
 
         self.__teClients = QtWidgets.QTextEdit(self)
-        self.__teClients.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.1 * self.__height), 120, 340))
+        self.__teClients.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.1 * self.__height), 140, 340))
         self.__teClients.setObjectName("teClients")
         self.__teClients.setReadOnly(True)
 
@@ -161,13 +163,17 @@ class ServerGUI(QMainWindow):
         self.__active_GUI_setter(active=self.__active)
         self.__update_terminal("Server has stopped\n")
 
+    @pyqtSlot(str)
     def __update_terminal(self, input: str):
         self.__terminal_memory += input
         self.__teTerminal.setText(self.__terminal_memory)
         self.__teTerminal.verticalScrollBar().setValue(self.__teTerminal.verticalScrollBar().maximum())
 
-    def update_clients(self):
-        pass
+    @pyqtSlot(str)
+    def __update_clients(self, client: str):
+        self.__clients_memory += client
+        self.__teClients.setText(self.__clients_memory)
+        self.__teClients.verticalScrollBar().setValue(self.__teClients.verticalScrollBar().maximum())
 
     def __send(self):
         pass

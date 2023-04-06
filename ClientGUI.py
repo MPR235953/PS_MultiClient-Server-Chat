@@ -25,7 +25,7 @@ class ClientGUI(QMainWindow):
     def __setup_GUI(self):
 
         self.setWindowTitle("Client")
-        self.resize(self.__width, self.__height)
+        self.setGeometry(1000, 0, self.__width, self.__height)
 
         self.__set_conn()
         self.__set_send()
