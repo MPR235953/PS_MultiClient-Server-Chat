@@ -55,8 +55,7 @@ class Server:
                     else:
                         self.gui.teLog.append('no more data from ' + str(client_address))
                         break
-
-            finally:
+            except:
                 # Clean up the connection
                 connection.close()
                 self.stop_listen()
