@@ -4,14 +4,14 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5 import QtCore, QtWidgets
 import sys
 
+from Logger import logger
 from Client import Client
 
 class ClientGUI(QMainWindow):
     def __init__(self):
-
         super().__init__()
-        self.receiver_memory = ""
-        self.connection = False
+        self.__receiver_memory = ""
+        self.__connection = False
 
         self.__width = 700
         self.__height = 400
@@ -19,8 +19,8 @@ class ClientGUI(QMainWindow):
 
         self.__setup_GUI()
 
-        self.client = Client()
-        self.client.sig_transfer.connect(self.__receive)
+        self.__client = Client()
+        self.__client.sig_transfer.connect(self.__receive)
 
     def __setup_GUI(self):
 
@@ -32,122 +32,122 @@ class ClientGUI(QMainWindow):
         self.__set_receive()
         self.__set_status()
 
-        self.__connection_GUI_setter(connection=self.connection)
+        self.__connection_GUI_setter(connection=self.__connection)
 
     def __set_IP(self):
 
-        self.lbIP = QtWidgets.QLabel(self)
-        self.lbIP.setGeometry(QtCore.QRect(60, 20, 100, 15))
-        self.lbIP.setObjectName("lbIP")
-        self.lbIP.setText("Enter IP")
+        self.__lbIP = QtWidgets.QLabel(self)
+        self.__lbIP.setGeometry(QtCore.QRect(60, 20, 100, 15))
+        self.__lbIP.setObjectName("lbIP")
+        self.__lbIP.setText("Enter IP")
 
-        self.teIP = QtWidgets.QTextEdit(self)
-        self.teIP.setGeometry(QtCore.QRect(60, 40, 100, 30))
-        self.teIP.setObjectName("teIP")
-        self.teIP.setPlaceholderText("127.0.0.1")
-        self.teIP.setText("127.0.0.1")  # TODO: change it, only for debug
+        self.__teIP = QtWidgets.QTextEdit(self)
+        self.__teIP.setGeometry(QtCore.QRect(60, 40, 100, 30))
+        self.__teIP.setObjectName("teIP")
+        self.__teIP.setPlaceholderText("127.0.0.1")
+        self.__teIP.setText("127.0.0.1")  # TODO: change it, only for debug
 
     def __set_port(self):
 
-        self.lbPort = QtWidgets.QLabel(self)
-        self.lbPort.setGeometry(QtCore.QRect(60, 75, 100, 15))
-        self.lbPort.setObjectName("lbPort")
-        self.lbPort.setText("Enter Port")
+        self.__lbPort = QtWidgets.QLabel(self)
+        self.__lbPort.setGeometry(QtCore.QRect(60, 75, 100, 15))
+        self.__lbPort.setObjectName("lbPort")
+        self.__lbPort.setText("Enter Port")
 
-        self.tePort = QtWidgets.QTextEdit(self)
-        self.tePort.setGeometry(QtCore.QRect(60, 95, 100, 30))
-        self.tePort.setObjectName("tePort")
-        self.tePort.setPlaceholderText("5000")
-        self.tePort.setText("5000") # TODO: change it, only for debug
+        self.__tePort = QtWidgets.QTextEdit(self)
+        self.__tePort.setGeometry(QtCore.QRect(60, 95, 100, 30))
+        self.__tePort.setObjectName("tePort")
+        self.__tePort.setPlaceholderText("5000")
+        self.__tePort.setText("5000") # TODO: change it, only for debug
 
     def __set_conn(self):
 
         self.__set_IP()
         self.__set_port()
 
-        self.btnConn = QtWidgets.QPushButton(self)
-        self.btnConn.setGeometry(QtCore.QRect(60, 130, 100, 25))
-        self.btnConn.setObjectName("btnConn")
-        self.btnConn.setText("Connect")
-        self.btnConn.clicked.connect(self.__connect)
+        self.__btnConn = QtWidgets.QPushButton(self)
+        self.__btnConn.setGeometry(QtCore.QRect(60, 130, 100, 25))
+        self.__btnConn.setObjectName("btnConn")
+        self.__btnConn.setText("Connect")
+        self.__btnConn.clicked.connect(self.__connect)
 
-        self.btnDisconn = QtWidgets.QPushButton(self)
-        self.btnDisconn.setGeometry(QtCore.QRect(60, 160, 100, 25))
-        self.btnDisconn.setObjectName("btnDisconn")
-        self.btnDisconn.setText("Disconnect")
-        self.btnDisconn.clicked.connect(self.__disconnect)
+        self.__btnDisconn = QtWidgets.QPushButton(self)
+        self.__btnDisconn.setGeometry(QtCore.QRect(60, 160, 100, 25))
+        self.__btnDisconn.setObjectName("btnDisconn")
+        self.__btnDisconn.setText("Disconnect")
+        self.__btnDisconn.clicked.connect(self.__disconnect)
 
     def __set_send(self):
 
-        self.lbSend = QtWidgets.QLabel(self)
-        self.lbSend.setGeometry(QtCore.QRect(60, 200, 100, 15))
-        self.lbSend.setObjectName("lbSend")
-        self.lbSend.setText("Text to send")
-        self.lbSend.setDisabled(True)
+        self.__lbSend = QtWidgets.QLabel(self)
+        self.__lbSend.setGeometry(QtCore.QRect(60, 200, 100, 15))
+        self.__lbSend.setObjectName("lbSend")
+        self.__lbSend.setText("Text to send")
+        self.__lbSend.setDisabled(True)
 
-        self.teSend = QtWidgets.QTextEdit(self)
-        self.teSend.setGeometry(QtCore.QRect(60, 220, 200, 100))
-        self.teSend.setObjectName("teSend")
-        self.teSend.setDisabled(True)
+        self.__teSend = QtWidgets.QTextEdit(self)
+        self.__teSend.setGeometry(QtCore.QRect(60, 220, 200, 100))
+        self.__teSend.setObjectName("teSend")
+        self.__teSend.setDisabled(True)
 
-        self.btnSend = QtWidgets.QPushButton(self)
-        self.btnSend.setGeometry(QtCore.QRect(60, 325, 100, 25))
-        self.btnSend.setObjectName("btnSend")
-        self.btnSend.setText("SEND")
-        self.btnSend.setCheckable(True)
-        self.btnSend.clicked.connect(self.__send)
-        self.btnSend.setDisabled(True)
+        self.__btnSend = QtWidgets.QPushButton(self)
+        self.__btnSend.setGeometry(QtCore.QRect(60, 325, 100, 25))
+        self.__btnSend.setObjectName("btnSend")
+        self.__btnSend.setText("SEND")
+        self.__btnSend.setCheckable(True)
+        self.__btnSend.clicked.connect(self.__send)
+        self.__btnSend.setDisabled(True)
 
     def __set_receive(self):
 
-        self.lbReceive = QtWidgets.QLabel(self)
-        self.lbReceive.setGeometry(QtCore.QRect(320, 200, 100, 15))
-        self.lbReceive.setObjectName("lbReceive")
-        self.lbReceive.setText("Received text")
-        self.lbReceive.setDisabled(True)
+        self.__lbReceive = QtWidgets.QLabel(self)
+        self.__lbReceive.setGeometry(QtCore.QRect(320, 200, 100, 15))
+        self.__lbReceive.setObjectName("lbReceive")
+        self.__lbReceive.setText("Received text")
+        self.__lbReceive.setDisabled(True)
 
-        self.teReceive = QtWidgets.QTextEdit(self)
-        self.teReceive.setGeometry(QtCore.QRect(320, 220, 360, 100))
-        self.teReceive.setObjectName("teReceive")
-        self.teReceive.setReadOnly(True)
-        self.teReceive.setDisabled(True)
+        self.__teReceive = QtWidgets.QTextEdit(self)
+        self.__teReceive.setGeometry(QtCore.QRect(320, 220, 360, 100))
+        self.__teReceive.setObjectName("teReceive")
+        self.__teReceive.setReadOnly(True)
+        self.__teReceive.setDisabled(True)
 
     def __set_status(self):
 
-        self.lbConnState = QtWidgets.QLabel(self)
-        self.lbConnState.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.025 * self.__width), 100, 15))
-        self.lbConnState.setObjectName("lbConnState")
-        self.lbConnState.setText("State")
+        self.__lbConnState = QtWidgets.QLabel(self)
+        self.__lbConnState.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.025 * self.__width), 100, 15))
+        self.__lbConnState.setObjectName("lbConnState")
+        self.__lbConnState.setText("State")
 
-        self.teConnState = QtWidgets.QTextEdit(self)
-        self.teConnState.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.1 * self.__height), 120, 30))
-        self.teConnState.setObjectName("teConnState")
-        self.teConnState.setReadOnly(True)
+        self.__teConnState = QtWidgets.QTextEdit(self)
+        self.__teConnState.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.1 * self.__height), 120, 30))
+        self.__teConnState.setObjectName("teConnState")
+        self.__teConnState.setReadOnly(True)
 
     def __connection_GUI_setter(self, connection) -> None:
         ''' Method to update client GUI, set it to connected or not connected view'''
         if not connection:
-            self.teConnState.setTextColor(QColor(255, 0, 0))
-            self.teConnState.setText("Not connected")
+            self.__teConnState.setTextColor(QColor(255, 0, 0))
+            self.__teConnState.setText("Not connected")
         else:
-            self.teConnState.setTextColor(QColor(0, 127, 0))
-            self.teConnState.setText("Connected")
+            self.__teConnState.setTextColor(QColor(0, 127, 0))
+            self.__teConnState.setText("Connected")
 
-        self.lbSend.setEnabled(connection)
-        self.lbReceive.setEnabled(connection)
-        self.teSend.setEnabled(connection)
-        self.teReceive.setEnabled(connection)
-        self.btnSend.setEnabled(connection)
-        self.lbIP.setEnabled(not connection)
-        self.teIP.setEnabled(not connection)
-        self.lbPort.setEnabled(not connection)
-        self.tePort.setEnabled(not connection)
+        self.__lbSend.setEnabled(connection)
+        self.__lbReceive.setEnabled(connection)
+        self.__teSend.setEnabled(connection)
+        self.__teReceive.setEnabled(connection)
+        self.__btnSend.setEnabled(connection)
+        self.__lbIP.setEnabled(not connection)
+        self.__teIP.setEnabled(not connection)
+        self.__lbPort.setEnabled(not connection)
+        self.__tePort.setEnabled(not connection)
 
-        self.btnConn.setEnabled(not connection)
-        self.btnDisconn.setEnabled(connection)
+        self.__btnConn.setEnabled(not connection)
+        self.__btnDisconn.setEnabled(connection)
 
-        self.receiver_memory = ""
-        self.teReceive.setText(self.receiver_memory)
+        self.__receiver_memory = ""
+        self.__teReceive.setText(self.__receiver_memory)
 
     def __show_popup_fail(self, msg: str) -> None:
 
@@ -159,51 +159,38 @@ class ClientGUI(QMainWindow):
         popup.exec_()
         if popup.standardButton(popup.clickedButton()) == QMessageBox.Retry:
             self.__connect()
-    def __show_popup_success(self):
-
-        msg = QMessageBox()
-        msg.setWindowTitle("Info")
-        msg.setText("Connection successful")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.setDefaultButton(QMessageBox.Ok)
-        msg.exec_()
 
     def __connect(self):
-        print('connect')
-        ip = self.teIP.toPlainText()
-        port = int(self.tePort.toPlainText())
-        msg = self.client.connect(server_ip=ip, server_port=port)
+        logger.info("Called connect method")
+        ip = self.__teIP.toPlainText()
+        port = int(self.__tePort.toPlainText())
+        msg = self.__client.connect(server_ip=ip, server_port=port)
         if msg is not None: self.__show_popup_fail(msg=msg)
         else:
-            self.connection = True
-            self.__connection_GUI_setter(connection=self.connection)
+            self.__connection = True
+            self.__connection_GUI_setter(connection=self.__connection)
 
     def __disconnect(self):
-        print('disconnect')
-        self.client.disconnect()
-        self.connection = False
-        self.__connection_GUI_setter(connection=self.connection)
-
-
+        logger.info("Called disconnect method")
+        self.__client.disconnect()
+        self.__connection = False
+        self.__connection_GUI_setter(connection=self.__connection)
 
     def __send(self):
-        msg = self.teSend.toPlainText()
-        self.client.send(msg)
-        self.teSend.setText("")  # clear QTextEdit after send
+        msg = self.__teSend.toPlainText()
+        self.__client.send(msg)
+        self.__teSend.setText("")  # clear QTextEdit after send
 
     @pyqtSlot(str)
     def __receive(self, msg: str):
-        self.receiver_memory += msg + '\n'
-        self.teReceive.setText(self.receiver_memory)
-        self.teReceive.verticalScrollBar().setValue(self.teReceive.verticalScrollBar().maximum())
+        self.__receiver_memory += msg + '\n'
+        self.__teReceive.setText(self.__receiver_memory)
+        self.__teReceive.verticalScrollBar().setValue(self.__teReceive.verticalScrollBar().maximum())
 
-    def closeEvent(self, event) -> None:
+    def __closeEvent(self, event) -> None:
         ''' close app by X '''
-        self.client.disconnect()
+        self.__client.disconnect()
         QApplication.quit()
-
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

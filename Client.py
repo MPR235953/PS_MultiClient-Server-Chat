@@ -1,45 +1,48 @@
 import socket
 import threading
 
+from Logger import logger
 from PyQt5.QtCore import pyqtSignal, QObject
 
 class Client(QObject):
     sig_transfer = pyqtSignal(str)
     def __init__(self):
         super().__init__()
-        self.bytes = 16
-        self.server_ip = None
-        self.server_port = None
-        self.client_socket = None
-        self.listener = None
-        self.connection = False
+        self.__bytes = 16
+        self.__server_ip = None
+        self.__server_port = None
+        self.__client_socket = None
+        self.__listener = None
+        self.__connection = False
 
     def connect(self, server_ip: str, server_port: int) -> str:
-        self.server_ip = server_ip
-        self.server_port = server_port
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__server_ip = server_ip
+        self.__server_port = server_port
+        self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            print("connect - 2")
-            self.client_socket.connect((self.server_ip, self.server_port))
-            self.connection = True
-            self.listener = threading.Thread(target=self.listen)
-            self.listener.start()
+            logger.info("Try to connect to server")
+            self.__client_socket.connect((self.__server_ip, self.__server_port))
+            self.__connection = True
+            self.__listener = threading.Thread(target=self.__listen)
+            self.__listener.start()
+            logger.info("Connected to server - start listen ")
         except Exception as e: return str(e)
 
     def disconnect(self):
-        self.connection = False
-        self.client_socket.sendall(str.encode('close'))
-        self.client_socket.close()
-        print("disconnect - 2")
+        self.__connection = False
+        self.__client_socket.sendall(str.encode('close'))
+        self.__client_socket.close()
+        logger.info("Disconnected")
 
     def send(self, msg: str):
-        self.client_socket.sendall(str.encode(msg))
+        self.__client_socket.sendall(str.encode(msg))
+        logger.info("Message was sent")
 
-    def listen(self):
-        while self.connection:
-            recv = self.client_socket.recv(self.bytes)
+    def __listen(self):
+        while self.__connection:
+            recv = self.__client_socket.recv(self.__bytes)
             recv_len = len(recv)
             if recv_len > 0:
                 self.sig_transfer.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
             else: break
-        print("finished - 2")
+        logger.info("Listener task was finished")
