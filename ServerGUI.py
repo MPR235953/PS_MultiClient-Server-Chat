@@ -188,7 +188,7 @@ class ServerGUI(QMainWindow):
     def __receive(self, msg: str):
         pass
 
-    def __closeEvent(self, event) -> None:
+    def closeEvent(self, event) -> None:
         ''' close app by X '''
         QApplication.quit()
 

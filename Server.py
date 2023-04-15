@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 
 from utils import logger, cfg
 
-
+# TODO: disconnection not work for a second disconnection
 class ClientData:
     def __init__(self, id: int, ip: str, port: int):
         self.id = id
@@ -70,9 +70,12 @@ class Server(QObject):
                 time.sleep(cfg['transfer_delay'])
                 data = client['connection'].recv(16)
                 decoded_data = data.decode('utf-8')
+                id = client['id']
                 if decoded_data != 'close':
                     logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
-                    client['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
+                    for cli in self.__client_list:
+                        if id == cli['id']: continue
+                        cli['connection'].sendall(('#' + str(cli['id']) + ' ' + decoded_data).encode('utf-8'))
                 else:
                     logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
                     client['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data + ' disconnected').encode('utf-8'))

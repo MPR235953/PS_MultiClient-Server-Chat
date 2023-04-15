@@ -192,9 +192,10 @@ class ClientGUI(QMainWindow):
         self.__teReceive.setText(self.__receiver_memory)
         self.__teReceive.verticalScrollBar().setValue(self.__teReceive.verticalScrollBar().maximum())
 
-    def __closeEvent(self, event) -> None:
+    def closeEvent(self, event) -> None:
         ''' close app by X '''
-        self.__client.disconnect()
+        if self.__client.get_connection_status():
+            self.__client.disconnect()
         QApplication.quit()
 
 if __name__ == '__main__':

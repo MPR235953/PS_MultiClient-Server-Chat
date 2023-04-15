@@ -14,6 +14,9 @@ class Client(QObject):
         self.__listener = None
         self.__connection = False
 
+    def get_connection_status(self):
+        return self.__connection
+
     def connect(self, server_ip: str, server_port: int) -> str:
         logger.info("Set up web stuff")
         self.__server_ip = server_ip
