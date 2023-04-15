@@ -22,8 +22,8 @@ class ServerGUI(QMainWindow):
         self.__setup_GUI()
 
         self.__server = Server()
-        self.__server.sig_terminal.connect(self.__update_terminal)
-        self.__server.sig_clients.connect(self.__update_clients)
+        self.__server.sig_update_terminal.connect(self.__update_terminal)
+        self.__server.sig_update_clients.connect(self.__update_clients)
 
     def __setup_GUI(self):
 
@@ -182,13 +182,6 @@ class ServerGUI(QMainWindow):
         logger.info(self.__clients_memory)
         self.__teClients.setText(self.__clients_memory)
         self.__teClients.verticalScrollBar().setValue(self.__teClients.verticalScrollBar().maximum())
-
-    def __send(self):
-        pass
-
-    @pyqtSlot(str)
-    def __receive(self, msg: str):
-        pass
 
     def closeEvent(self, event) -> None:
         ''' close app by X '''

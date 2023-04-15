@@ -1,13 +1,13 @@
 import socket
 import threading
 
-from utils import logger, cfg
+import utils
+from utils import logger, CONFIG
 from PyQt5.QtCore import pyqtSignal, QObject
 
 class Client(QObject):
-    # TODO: try to use only one signal
-    sig_transfer = pyqtSignal(str)
-    sig_server_down = pyqtSignal(str)
+    sig_update_receiver = pyqtSignal(str)
+    sig_handle_disconnection = pyqtSignal(str)
     def __init__(self):
         super().__init__()
         self.__server_ip = None
@@ -35,7 +35,7 @@ class Client(QObject):
 
     def disconnect(self):
         self.__connection = False
-        self.__client_socket.sendto(str.encode('close'), (self.__server_ip, self.__server_port))
+        self.__client_socket.sendto(str.encode(utils.CLIENT_DISCONNECT_FROM_SERVER_KEY), (self.__server_ip, self.__server_port))
         self.__client_socket.close()
         logger.info("Disconnected")
 
@@ -43,15 +43,14 @@ class Client(QObject):
         self.__client_socket.sendto(str.encode(msg), (self.__server_ip, self.__server_port))
         logger.info("Message was sent")
 
-    # TODO: change disconn sig text
     def __listen(self):
         while self.__connection:
-            recv = self.__client_socket.recv(cfg['max_transfer'])
+            recv = self.__client_socket.recv(CONFIG['max_transfer'])
             recv_len = len(recv)
             if recv_len > 0:
-                if recv.decode("utf-8") == 'close':
-                    self.sig_server_down.emit("Server down")
+                if recv.decode("utf-8") == utils.SERVER_DISCONNECT_CLIENT_KEY:
+                    self.sig_handle_disconnection.emit("Disconnected from server")
                     break
-                self.sig_transfer.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
+                self.sig_update_receiver.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
             else: break
         logger.info("Listener task was finished")

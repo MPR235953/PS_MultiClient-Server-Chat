@@ -20,8 +20,8 @@ class ClientGUI(QMainWindow):
         self.__setup_GUI()
 
         self.__client = Client()
-        self.__client.sig_transfer.connect(self.__receive)
-        self.__client.sig_server_down.connect(self.__server_down)
+        self.__client.sig_update_receiver.connect(self.__update_receiver)
+        self.__client.sig_handle_disconnection.connect(self.__handle_disconnection)
 
     def __setup_GUI(self):
 
@@ -31,7 +31,7 @@ class ClientGUI(QMainWindow):
         self.__set_conn()
         self.__set_send()
         self.__set_receive()
-        self.__set_status()
+        self.__set_connection_status()
 
         self.__toggle_GUI()
 
@@ -113,8 +113,7 @@ class ClientGUI(QMainWindow):
         self.__teReceive.setReadOnly(True)
         self.__teReceive.setDisabled(True)
 
-    # TODO: rename
-    def __set_status(self):
+    def __set_connection_status(self):
 
         self.__lbConnState = QtWidgets.QLabel(self)
         self.__lbConnState.setGeometry(QtCore.QRect(int(0.8 * self.__width), int(0.025 * self.__width), 100, 15))
@@ -179,13 +178,10 @@ class ClientGUI(QMainWindow):
         self.__connection = False
         self.__toggle_GUI()
 
-    # TODO: maybe split __disconnect and __server_down into one ?
     @pyqtSlot(str)
-    def __server_down(self, msg: str):
+    def __handle_disconnection(self, msg: str):
         logger.info(msg)
-        self.__client.disconnect()
-        self.__connection = False
-        self.__toggle_GUI()
+        self.__disconnect()
         self.__show_popup(msg=msg, retry=False)
 
     def __send(self):
@@ -193,9 +189,8 @@ class ClientGUI(QMainWindow):
         self.__client.send(msg)
         self.__teSend.setText("")  # clear QTextEdit after send
 
-    # TODO: refactor this ?
     @pyqtSlot(str)
-    def __receive(self, msg: str):
+    def __update_receiver(self, msg: str):
         self.__receiver_memory += msg + '\n'
         self.__teReceive.setText(self.__receiver_memory)
         self.__teReceive.verticalScrollBar().setValue(self.__teReceive.verticalScrollBar().maximum())
