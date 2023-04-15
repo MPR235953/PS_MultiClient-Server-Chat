@@ -27,26 +27,26 @@ class Server(QObject):
         self.__client_list = []
         self.__server_down = False
 
-    # TODO: add exception ? YES
     # TODO: handle with different IP than localhost
     def start(self, server_ip: str, server_port: int):
-        logger.info("Set up web stuff")
-        self.__server_down = False
+        try:
+            logger.info("Set up web stuff")
+            self.__server_down = False
 
-        self.__server_ip = server_ip
-        self.__server_port = server_port
-        self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
-        self.__server_socket.bind((self.__server_ip, self.__server_port))
-        self.__server_socket.listen(CONFIG['max_connect_requests'])
+            self.__server_ip = server_ip
+            self.__server_port = server_port
+            self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
+            self.__server_socket.bind((self.__server_ip, self.__server_port))
+            self.__server_socket.listen(CONFIG['max_connect_requests'])
 
-        self.__connection_listener = threading.Thread(target=self.__connection_listen)
-        self.__connection_listener.start()
-        self.__transfer_listener = threading.Thread(target=self.__transfer_listen)
-        self.__transfer_listener.start()
-        logger.info("Server configured")
+            self.__connection_listener = threading.Thread(target=self.__connection_listen)
+            self.__connection_listener.start()
+            self.__transfer_listener = threading.Thread(target=self.__transfer_listen)
+            self.__transfer_listener.start()
+            logger.info("Server configured")
+        except Exception as e: return str(e)
 
-    # TODO: refactor
     def stop(self):
         self.__server_down = True
         diss_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,8 +66,6 @@ class Server(QObject):
         if not free_ids: return None
         else: return free_ids[0]  # get first free id
 
-    # TODO: fix handling with ID's
-    # TODO: refactor logger infos
     def __connection_listen(self):
         logger.info("Server is listening for connection")
         while True:
@@ -88,8 +86,6 @@ class Server(QObject):
             self.sig_update_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
             self.sig_update_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
 
-    # TODO: maybe simplify ?
-    # TODO: Broken pipe when disconnect user which wait for send message
     def __transfer_listen(self):
         logger.info("Server is ready to transfer data")
         while True:
@@ -111,6 +107,3 @@ class Server(QObject):
                     self.__client_list.remove(client)
                     logger.info(self.__client_list)
                     break
-
-
-

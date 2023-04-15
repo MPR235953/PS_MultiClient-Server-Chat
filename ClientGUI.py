@@ -178,16 +178,16 @@ class ClientGUI(QMainWindow):
         self.__connection = False
         self.__toggle_GUI()
 
+    def __send(self):
+        msg = self.__teSend.toPlainText()
+        self.__client.send(msg)
+        self.__teSend.setText("")  # clear QTextEdit after send
+
     @pyqtSlot(str)
     def __handle_disconnection(self, msg: str):
         logger.info(msg)
         self.__disconnect()
         self.__show_popup(msg=msg, retry=False)
-
-    def __send(self):
-        msg = self.__teSend.toPlainText()
-        self.__client.send(msg)
-        self.__teSend.setText("")  # clear QTextEdit after send
 
     @pyqtSlot(str)
     def __update_receiver(self, msg: str):

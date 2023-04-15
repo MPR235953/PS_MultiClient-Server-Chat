@@ -32,13 +32,12 @@ class ServerGUI(QMainWindow):
 
         self.__set_conn()
         self.__set_terminal()
-        self.__set_status()
+        self.__set_connection_status()
         self.__set_clients()
 
         self.__active_GUI_setter(active=self.__active)
 
-    # TODO: rename
-    def __set_status(self):
+    def __set_connection_status(self):
 
         self.__lbConnState = QtWidgets.QLabel(self)
         self.__lbConnState.setGeometry(QtCore.QRect(60, 20, 100, 15))
@@ -150,7 +149,7 @@ class ServerGUI(QMainWindow):
         ip = self.__teIP.toPlainText()
         port = int(self.__tePort.toPlainText())
         msg = self.__server.start(server_ip=ip, server_port=port)
-        if msg is not None: self.__show_popup_fail(msg=msg)
+        if msg is not None: self.__show_popup(msg=msg, retry=False)
         else:
             self.__active = True
             self.__active_GUI_setter(active=self.__active)
@@ -162,6 +161,18 @@ class ServerGUI(QMainWindow):
         self.__active = False
         self.__active_GUI_setter(active=self.__active)
         self.__update_terminal("Server has stopped\n")
+
+    def __show_popup(self, title: str = 'Info', msg: str = '', retry: bool = True) -> None:
+        popup = QMessageBox(self)
+        popup.setWindowTitle(title)
+        popup.setText(msg)
+        if retry:
+            popup.setStandardButtons(QMessageBox.Retry | QMessageBox.Ok)
+            popup.setDefaultButton(QMessageBox.Retry)
+        else: popup.setStandardButtons(QMessageBox.Ok)
+        popup.exec_()
+        if popup.standardButton(popup.clickedButton()) == QMessageBox.Retry:
+            self.__connect()
 
     @pyqtSlot(str)
     def __update_terminal(self, input: str):
@@ -185,6 +196,7 @@ class ServerGUI(QMainWindow):
 
     def closeEvent(self, event) -> None:
         ''' close app by X '''
+        self.__stop()
         QApplication.quit()
 
 if __name__ == '__main__':
