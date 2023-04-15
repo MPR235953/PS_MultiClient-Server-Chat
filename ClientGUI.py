@@ -21,6 +21,7 @@ class ClientGUI(QMainWindow):
 
         self.__client = Client()
         self.__client.sig_transfer.connect(self.__receive)
+        self.__client.sig_server_down.connect(self.__server_down)
 
     def __setup_GUI(self):
 
@@ -153,13 +154,15 @@ class ClientGUI(QMainWindow):
         self.__teReceive.setText(self.__receiver_memory)
 
     # TODO: rename
-    def __show_popup_fail(self, msg: str) -> None:
-
+    # TODO: rebuild popup
+    def __show_popup_fail(self, msg: str, retry: bool = True) -> None:
         popup = QMessageBox(self)
         popup.setWindowTitle("Info")
         popup.setText(msg)
-        popup.setStandardButtons(QMessageBox.Retry | QMessageBox.Ok)
-        popup.setDefaultButton(QMessageBox.Retry)
+        if retry:
+            popup.setStandardButtons(QMessageBox.Retry | QMessageBox.Ok)
+            popup.setDefaultButton(QMessageBox.Retry)
+        else: popup.setStandardButtons(QMessageBox.Ok)
         popup.exec_()
         if popup.standardButton(popup.clickedButton()) == QMessageBox.Retry:
             self.__connect()
@@ -179,6 +182,15 @@ class ClientGUI(QMainWindow):
         self.__client.disconnect()
         self.__connection = False
         self.__connection_GUI_setter(connection=self.__connection)
+
+    # TODO: maybe split __disconnect and __server_down into one ?
+    @pyqtSlot(str)
+    def __server_down(self, msg: str):
+        logger.info(msg)
+        self.__client.disconnect()
+        self.__connection = False
+        self.__connection_GUI_setter(connection=self.__connection)
+        self.__show_popup_fail(msg, retry=False)
 
     def __send(self):
         msg = self.__teSend.toPlainText()

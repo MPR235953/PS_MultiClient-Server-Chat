@@ -176,7 +176,9 @@ class ServerGUI(QMainWindow):
         logger.info(client)
         logger.info(self.__clients_memory)
         if operation == 'ADD': self.__clients_memory += client
-        elif operation == 'DEL': self.__clients_memory = self.__clients_memory.replace(client, '')
+        elif operation == 'DEL':
+            if client == 'ALL': self.__clients_memory = ''
+            else: self.__clients_memory = self.__clients_memory.replace(client, '')
         logger.info(self.__clients_memory)
         self.__teClients.setText(self.__clients_memory)
         self.__teClients.verticalScrollBar().setValue(self.__teClients.verticalScrollBar().maximum())
