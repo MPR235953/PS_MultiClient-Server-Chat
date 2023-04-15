@@ -7,7 +7,6 @@ from PyQt5.QtCore import pyqtSignal, QObject
 
 from utils import logger, cfg
 
-# TODO: disconnection not work for a second disconnection
 class ClientData:
     def __init__(self, id: int, ip: str, port: int):
         self.id = id
@@ -37,18 +36,19 @@ class Server(QObject):
         self.__server_socket.bind((self.__server_ip, self.__server_port))
         self.__server_socket.listen(cfg['max_connect_requests'])
 
-        self.__connection_listener = threading.Thread(target=self.__listen)
+        self.__connection_listener = threading.Thread(target=self.__connection_listen)
         self.__connection_listener.start()
-        self.__transfer_listener = threading.Thread(target=self.__transfer)
+        self.__transfer_listener = threading.Thread(target=self.__transfer_listen)
         self.__transfer_listener.start()
         logger.info("Server configured")
         return None  # tmp
 
+    # TODO: disconn all user when server is down or stopped
     def stop(self):
         self.__server_socket.close()
         logger.info("Disconnected")
 
-    def __listen(self):
+    def __connection_listen(self):
         logger.info("Server is listening for connection")
         while True:
             connection, client_address = self.__server_socket.accept()
@@ -63,24 +63,24 @@ class Server(QObject):
             self.sig_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
 
     # TODO: maybe simplify ?
-    def __transfer(self):
+    def __transfer_listen(self):
         logger.info("Server is ready to transfer data")
         while True:
             for client in self.__client_list:
                 time.sleep(cfg['transfer_delay'])
                 data = client['connection'].recv(16)
                 decoded_data = data.decode('utf-8')
-                id = client['id']
                 if decoded_data != 'close':
                     logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
                     for cli in self.__client_list:
-                        if id == cli['id']: continue
                         cli['connection'].sendall(('#' + str(cli['id']) + ' ' + decoded_data).encode('utf-8'))
                 else:
                     logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
                     client['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data + ' disconnected').encode('utf-8'))
                     self.sig_terminal.emit(str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
                     self.sig_clients.emit(str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
+                    self.__client_list.remove(client)
+                    logger.info(self.__client_list)
                     break
 
 
