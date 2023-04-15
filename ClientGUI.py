@@ -33,7 +33,7 @@ class ClientGUI(QMainWindow):
         self.__set_receive()
         self.__set_status()
 
-        self.__connection_GUI_setter(connection=self.__connection)
+        self.__toggle_GUI()
 
     def __set_IP(self):
 
@@ -126,38 +126,34 @@ class ClientGUI(QMainWindow):
         self.__teConnState.setObjectName("teConnState")
         self.__teConnState.setReadOnly(True)
 
-    # TODO: delete parameter
-    # TODO: rename
-    def __connection_GUI_setter(self, connection) -> None:
+    def __toggle_GUI(self) -> None:
         ''' Method to update client GUI, set it to connected or not connected view'''
-        if not connection:
+        if not self.__connection:
             self.__teConnState.setTextColor(QColor(255, 0, 0))
             self.__teConnState.setText("Not connected")
         else:
             self.__teConnState.setTextColor(QColor(0, 127, 0))
             self.__teConnState.setText("Connected")
 
-        self.__lbSend.setEnabled(connection)
-        self.__lbReceive.setEnabled(connection)
-        self.__teSend.setEnabled(connection)
-        self.__teReceive.setEnabled(connection)
-        self.__btnSend.setEnabled(connection)
-        self.__lbIP.setEnabled(not connection)
-        self.__teIP.setEnabled(not connection)
-        self.__lbPort.setEnabled(not connection)
-        self.__tePort.setEnabled(not connection)
+        self.__lbSend.setEnabled(self.__connection)
+        self.__lbReceive.setEnabled(self.__connection)
+        self.__teSend.setEnabled(self.__connection)
+        self.__teReceive.setEnabled(self.__connection)
+        self.__btnSend.setEnabled(self.__connection)
+        self.__lbIP.setEnabled(not self.__connection)
+        self.__teIP.setEnabled(not self.__connection)
+        self.__lbPort.setEnabled(not self.__connection)
+        self.__tePort.setEnabled(not self.__connection)
 
-        self.__btnConn.setEnabled(not connection)
-        self.__btnDisconn.setEnabled(connection)
+        self.__btnConn.setEnabled(not self.__connection)
+        self.__btnDisconn.setEnabled(self.__connection)
 
         self.__receiver_memory = ""
         self.__teReceive.setText(self.__receiver_memory)
 
-    # TODO: rename
-    # TODO: rebuild popup
-    def __show_popup_fail(self, msg: str, retry: bool = True) -> None:
+    def __show_popup(self, title: str = 'Info', msg: str = '', retry: bool = True) -> None:
         popup = QMessageBox(self)
-        popup.setWindowTitle("Info")
+        popup.setWindowTitle(title)
         popup.setText(msg)
         if retry:
             popup.setStandardButtons(QMessageBox.Retry | QMessageBox.Ok)
@@ -172,16 +168,16 @@ class ClientGUI(QMainWindow):
         ip = self.__teIP.toPlainText()
         port = int(self.__tePort.toPlainText())
         msg = self.__client.connect(server_ip=ip, server_port=port)
-        if msg is not None: self.__show_popup_fail(msg=msg)
+        if msg is not None: self.__show_popup(msg=msg)
         else:
             self.__connection = True
-            self.__connection_GUI_setter(connection=self.__connection)
+            self.__toggle_GUI()
 
     def __disconnect(self):
         logger.info("Called disconnect method")
         self.__client.disconnect()
         self.__connection = False
-        self.__connection_GUI_setter(connection=self.__connection)
+        self.__toggle_GUI()
 
     # TODO: maybe split __disconnect and __server_down into one ?
     @pyqtSlot(str)
@@ -189,8 +185,8 @@ class ClientGUI(QMainWindow):
         logger.info(msg)
         self.__client.disconnect()
         self.__connection = False
-        self.__connection_GUI_setter(connection=self.__connection)
-        self.__show_popup_fail(msg, retry=False)
+        self.__toggle_GUI()
+        self.__show_popup(msg=msg, retry=False)
 
     def __send(self):
         msg = self.__teSend.toPlainText()
