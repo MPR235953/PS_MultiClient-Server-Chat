@@ -59,6 +59,13 @@ class Server(QObject):
         self.__server_socket.close()
         logger.info("Disconnected")
 
+    def __get_id(self) -> int | None:
+        occupied_ids = set(client['id'] for client in self.__client_list)  # get all occupied ids
+        avail_ids = set(i for i in range(CONFIG['client_max']))  # get all available ids based on client max
+        free_ids = list(avail_ids - occupied_ids)
+        if not free_ids: return None
+        else: return free_ids[0]  # get first free id
+
     # TODO: fix handling with ID's
     # TODO: refactor logger infos
     def __connection_listen(self):
@@ -68,17 +75,21 @@ class Server(QObject):
             if self.__server_down:
                 logger.info("Server finished listen for connection")
                 return
-            id = len(self.__client_list)
+            id = self.__get_id()
             client_data = {
                 "id": id,
                 "address": client_address,
                 "connection": connection
             }
+            if id is None:  # when server is full
+                client_data['connection'].sendall(utils.SERVER_DISCONNECT_CLIENT_KEY.encode('utf-8'))
+                continue
             self.__client_list.append(client_data)
             self.sig_update_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
             self.sig_update_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
 
     # TODO: maybe simplify ?
+    # TODO: Broken pipe when disconnect user which wait for send message
     def __transfer_listen(self):
         logger.info("Server is ready to transfer data")
         while True:
@@ -92,10 +103,9 @@ class Server(QObject):
                 if decoded_data != utils.CLIENT_DISCONNECT_FROM_SERVER_KEY:
                     logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
                     for cli in self.__client_list:
-                        cli['connection'].sendall(('#' + str(cli['id']) + ' ' + decoded_data).encode('utf-8'))
+                        cli['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
                 else:
                     logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
-                    client['connection'].sendall(('#' + str(client['id']) + ' disconnected').encode('utf-8'))
                     self.sig_update_terminal.emit(str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
                     self.sig_update_clients.emit(str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
                     self.__client_list.remove(client)

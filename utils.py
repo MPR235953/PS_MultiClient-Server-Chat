@@ -6,7 +6,8 @@ logger = logging.getLogger()
 CONFIG = {
     "max_transfer": 16,                 # in bytes
     "max_connect_requests": 5,          # normal value
-    "transfer_delay": 0.3               # in sec
+    "transfer_delay": 0.3,              # in sec
+    "client_max": 2
 }
 
 SERVER_DISCONNECT_CLIENT_KEY = 'wVwPerjVl6HYNSTs'
