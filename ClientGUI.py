@@ -165,7 +165,7 @@ class ClientGUI(QMainWindow):
     def __connect(self):
         logger.info("Called connect method")
         ip = self.__teIP.toPlainText()
-        port = int(self.__tePort.toPlainText())
+        port = self.__tePort.toPlainText()
         msg = self.__client.connect(server_ip=ip, server_port=port)
         if msg is not None: self.__show_popup(msg=msg)
         else:

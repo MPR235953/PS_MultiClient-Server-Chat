@@ -147,7 +147,7 @@ class ServerGUI(QMainWindow):
     def __start(self):
         logger.info("Called start method")
         ip = self.__teIP.toPlainText()
-        port = int(self.__tePort.toPlainText())
+        port = self.__tePort.toPlainText()
         msg = self.__server.start(server_ip=ip, server_port=port)
         if msg is not None: self.__show_popup(msg=msg, retry=False)
         else:

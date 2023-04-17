@@ -23,13 +23,13 @@ class Server(QObject):
         self.threads = []
 
     # TODO: handle with different IP than localhost
-    def start(self, server_ip: str, server_port: int):
+    def start(self, server_ip: str, server_port: str):
         try:
             logger.info("Set up web stuff")
             self.__server_down = False
 
             self.__server_ip = server_ip
-            self.__server_port = server_port
+            self.__server_port = int(server_port)
             self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
             self.__server_socket.bind((self.__server_ip, self.__server_port))
@@ -102,10 +102,8 @@ class Server(QObject):
                     cli['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
             else:
                 logger.info("Data: | {} | from client: | {} |".format(decoded_data,'#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
-                self.sig_update_terminal.emit(
-                    str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
-                self.sig_update_clients.emit(
-                    str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
+                self.sig_update_terminal.emit(str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
+                self.sig_update_clients.emit(str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
                 self.__client_list.remove(client)
                 logger.info(self.__client_list)
                 break

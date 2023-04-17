@@ -19,12 +19,12 @@ class Client(QObject):
     def get_connection_status(self):
         return self.__connection
 
-    def connect(self, server_ip: str, server_port: int) -> str:
-        logger.info("Set up web stuff")
-        self.__server_ip = server_ip
-        self.__server_port = server_port
-        self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    def connect(self, server_ip: str, server_port: str) -> str:
         try:
+            logger.info("Set up web stuff")
+            self.__server_ip = server_ip
+            self.__server_port = int(server_port)
+            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             logger.info("Try to connect to server")
             self.__client_socket.connect((self.__server_ip, self.__server_port))
             self.__connection = True
