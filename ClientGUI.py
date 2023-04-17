@@ -21,7 +21,7 @@ class ClientGUI(QMainWindow):
 
         self.__client = Client()
         self.__client.sig_update_receiver.connect(self.__update_receiver)
-        self.__client.sig_handle_disconnection.connect(self.__handle_disconnection)
+        self.__client.sig_handle_event.connect(self.__handle_event)
 
     def __setup_GUI(self):
 
@@ -183,11 +183,11 @@ class ClientGUI(QMainWindow):
         self.__client.send(msg)
         self.__teSend.setText("")  # clear QTextEdit after send
 
-    @pyqtSlot(str)
-    def __handle_disconnection(self, msg: str):
+    @pyqtSlot(str, bool)
+    def __handle_event(self, msg: str, retry=False):
         logger.info(msg)
         self.__disconnect()
-        self.__show_popup(msg=msg, retry=False)
+        self.__show_popup(msg=msg, retry=retry)
 
     @pyqtSlot(str)
     def __update_receiver(self, msg: str):

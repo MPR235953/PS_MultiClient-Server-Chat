@@ -49,7 +49,7 @@ class Server(QObject):
         diss_socket.connect((self.__server_ip, self.__server_port))
         diss_socket.close()
         for cli in self.__client_list:
-            cli['connection'].sendall(utils.SERVER_DISCONNECT_CLIENT_KEY.encode('utf-8'))
+            cli['connection'].sendall(utils.SERVER_DISCONNECT_KEY.encode('utf-8'))
         self.sig_update_clients.emit(str("DEL,ALL"))
         self.__client_list = []
         self.__server_socket.close()
@@ -59,7 +59,7 @@ class Server(QObject):
         occupied_ids = set(client['id'] for client in self.__client_list)  # get all occupied ids
         avail_ids = set(i for i in range(CONFIG['client_max']))  # get all available ids based on client max
         free_ids = list(avail_ids - occupied_ids)
-        if not free_ids: return None
+        if not free_ids: return None    # if there is no free ids it means that server is full
         else: return free_ids[0]  # get first free id
 
     def __connection_listen(self):
@@ -77,7 +77,8 @@ class Server(QObject):
                 "connection": connection
             }
             if id is None:  # when server is full
-                client_data['connection'].sendall(utils.SERVER_DISCONNECT_CLIENT_KEY.encode('utf-8'))
+                client_data['connection'].sendall(utils.SERVER_BUSY_KEY.encode('utf-8'))
+                self.sig_update_terminal.emit(str("Client - {}:{} want to join, but no id available\n").format(client_address[0], client_address[1]))
                 continue
             self.__client_list.append(client_data)
             self.sig_update_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
@@ -96,7 +97,7 @@ class Server(QObject):
                 logger.info("Server finished listen for transfer")
                 return
             decoded_data = data.decode('utf-8')
-            if decoded_data != utils.CLIENT_DISCONNECT_FROM_SERVER_KEY:
+            if decoded_data != utils.CLIENT_DISCONNECT_KEY:
                 logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
                 for cli in self.__client_list:
                     cli['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
