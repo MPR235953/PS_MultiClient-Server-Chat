@@ -28,7 +28,7 @@ class ServerGUI(QMainWindow):
     def __setup_GUI(self):
 
         self.setWindowTitle("Server")
-        self.setGeometry(0, 0, self.__width, self.__height)
+        self.setGeometry(0, 50, self.__width, self.__height)
 
         self.__set_conn()
         self.__set_terminal()
@@ -60,7 +60,7 @@ class ServerGUI(QMainWindow):
         self.__teIP.setGeometry(QtCore.QRect(60, 95, 100, 30))
         self.__teIP.setObjectName("teIP")
         self.__teIP.setPlaceholderText("127.0.0.1")
-        self.__teIP.setText("127.0.0.1")  # TODO: change it, only for debug
+        self.__teIP.setText("127.0.0.1")
 
     def __set_port(self):
 
@@ -73,7 +73,7 @@ class ServerGUI(QMainWindow):
         self.__tePort.setGeometry(QtCore.QRect(60, 150, 100, 30))
         self.__tePort.setObjectName("tePort")
         self.__tePort.setPlaceholderText("5000")
-        self.__tePort.setText("5000") # TODO: change it, only for debug
+        self.__tePort.setText("5000")
 
     def __set_conn(self):
 
@@ -147,7 +147,7 @@ class ServerGUI(QMainWindow):
     def __start(self):
         logger.info("Called start method")
         ip = self.__teIP.toPlainText()
-        port = int(self.__tePort.toPlainText())
+        port = self.__tePort.toPlainText()
         msg = self.__server.start(server_ip=ip, server_port=port)
         if msg is not None: self.__show_popup(msg=msg, retry=False)
         else:

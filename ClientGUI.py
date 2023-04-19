@@ -21,12 +21,12 @@ class ClientGUI(QMainWindow):
 
         self.__client = Client()
         self.__client.sig_update_receiver.connect(self.__update_receiver)
-        self.__client.sig_handle_disconnection.connect(self.__handle_disconnection)
+        self.__client.sig_handle_event.connect(self.__handle_event)
 
     def __setup_GUI(self):
 
         self.setWindowTitle("Client")
-        self.setGeometry(1000, 0, self.__width, self.__height)
+        self.setGeometry(1000, 50, self.__width, self.__height)
 
         self.__set_conn()
         self.__set_send()
@@ -46,7 +46,7 @@ class ClientGUI(QMainWindow):
         self.__teIP.setGeometry(QtCore.QRect(60, 40, 100, 30))
         self.__teIP.setObjectName("teIP")
         self.__teIP.setPlaceholderText("127.0.0.1")
-        self.__teIP.setText("127.0.0.1")  # TODO: change it, only for debug
+        self.__teIP.setText("127.0.0.1")
 
     def __set_port(self):
 
@@ -59,7 +59,7 @@ class ClientGUI(QMainWindow):
         self.__tePort.setGeometry(QtCore.QRect(60, 95, 100, 30))
         self.__tePort.setObjectName("tePort")
         self.__tePort.setPlaceholderText("5000")
-        self.__tePort.setText("5000") # TODO: change it, only for debug
+        self.__tePort.setText("5000")
 
     def __set_conn(self):
 
@@ -165,7 +165,7 @@ class ClientGUI(QMainWindow):
     def __connect(self):
         logger.info("Called connect method")
         ip = self.__teIP.toPlainText()
-        port = int(self.__tePort.toPlainText())
+        port = self.__tePort.toPlainText()
         msg = self.__client.connect(server_ip=ip, server_port=port)
         if msg is not None: self.__show_popup(msg=msg)
         else:
@@ -183,11 +183,11 @@ class ClientGUI(QMainWindow):
         self.__client.send(msg)
         self.__teSend.setText("")  # clear QTextEdit after send
 
-    @pyqtSlot(str)
-    def __handle_disconnection(self, msg: str):
+    @pyqtSlot(str, bool)
+    def __handle_event(self, msg: str, retry=False):
         logger.info(msg)
         self.__disconnect()
-        self.__show_popup(msg=msg, retry=False)
+        self.__show_popup(msg=msg, retry=retry)
 
     @pyqtSlot(str)
     def __update_receiver(self, msg: str):

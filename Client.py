@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 
 class Client(QObject):
     sig_update_receiver = pyqtSignal(str)
-    sig_handle_disconnection = pyqtSignal(str)
+    sig_handle_event = pyqtSignal(str, bool)
     def __init__(self):
         super().__init__()
         self.__server_ip = None
@@ -19,12 +19,12 @@ class Client(QObject):
     def get_connection_status(self):
         return self.__connection
 
-    def connect(self, server_ip: str, server_port: int) -> str:
-        logger.info("Set up web stuff")
-        self.__server_ip = server_ip
-        self.__server_port = server_port
-        self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    def connect(self, server_ip: str, server_port: str) -> str:
         try:
+            logger.info("Set up web stuff")
+            self.__server_ip = server_ip
+            self.__server_port = int(server_port)
+            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             logger.info("Try to connect to server")
             self.__client_socket.connect((self.__server_ip, self.__server_port))
             self.__connection = True
@@ -35,7 +35,7 @@ class Client(QObject):
 
     def disconnect(self):
         self.__connection = False
-        self.__client_socket.sendto(str.encode(utils.CLIENT_DISCONNECT_FROM_SERVER_KEY), (self.__server_ip, self.__server_port))
+        self.__client_socket.sendto(str.encode(utils.CLIENT_DISCONNECT_KEY), (self.__server_ip, self.__server_port))
         self.__client_socket.close()
         logger.info("Disconnected")
 
@@ -45,12 +45,18 @@ class Client(QObject):
 
     def __listen(self):
         while self.__connection:
-            recv = self.__client_socket.recv(CONFIG['max_transfer'])
-            recv_len = len(recv)
-            if recv_len > 0:
-                if recv.decode("utf-8") == utils.SERVER_DISCONNECT_CLIENT_KEY:
-                    self.sig_handle_disconnection.emit("Disconnected from server")
-                    break
-                self.sig_update_receiver.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
-            else: break
+            try:
+                recv = self.__client_socket.recv(CONFIG['max_transfer'])
+                recv_len = len(recv)
+                if recv_len > 0:
+                    if recv.decode("utf-8") == utils.SERVER_DISCONNECT_KEY:
+                        self.sig_handle_event.emit("Disconnected from server", False)
+                        break
+                    elif recv.decode("utf-8") == utils.SERVER_BUSY_KEY:
+                        self.sig_handle_event.emit("Server is busy", True)
+                        break
+                    self.sig_update_receiver.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
+                else: break
+            except Exception as e:
+                break
         logger.info("Listener task was finished")
