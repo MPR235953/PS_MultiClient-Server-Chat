@@ -45,15 +45,18 @@ class Client(QObject):
 
     def __listen(self):
         while self.__connection:
-            recv = self.__client_socket.recv(CONFIG['max_transfer'])
-            recv_len = len(recv)
-            if recv_len > 0:
-                if recv.decode("utf-8") == utils.SERVER_DISCONNECT_KEY:
-                    self.sig_handle_event.emit("Disconnected from server", False)
-                    break
-                elif recv.decode("utf-8") == utils.SERVER_BUSY_KEY:
-                    self.sig_handle_event.emit("Server is busy", True)
-                    break
-                self.sig_update_receiver.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
-            else: break
+            try:
+                recv = self.__client_socket.recv(CONFIG['max_transfer'])
+                recv_len = len(recv)
+                if recv_len > 0:
+                    if recv.decode("utf-8") == utils.SERVER_DISCONNECT_KEY:
+                        self.sig_handle_event.emit("Disconnected from server", False)
+                        break
+                    elif recv.decode("utf-8") == utils.SERVER_BUSY_KEY:
+                        self.sig_handle_event.emit("Server is busy", True)
+                        break
+                    self.sig_update_receiver.emit(str(recv.decode("utf-8")) + ' - {} bytes'.format(recv_len))
+                else: break
+            except Exception as e:
+                break
         logger.info("Listener task was finished")

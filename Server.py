@@ -22,7 +22,6 @@ class Server(QObject):
         self.__server_down = False
         self.threads = []
 
-    # TODO: handle with different IP than localhost
     def start(self, server_ip: str, server_port: str):
         try:
             logger.info("Set up web stuff")
@@ -37,8 +36,6 @@ class Server(QObject):
 
             self.__connection_listener = threading.Thread(target=self.__connection_listen)
             self.__connection_listener.start()
-            #self.__transfer_listener = threading.Thread(target=self.__transfer_listen)
-            #self.__transfer_listener.start()
 
             logger.info("Server configured")
         except Exception as e: return str(e)
@@ -84,6 +81,7 @@ class Server(QObject):
             self.sig_update_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
             self.sig_update_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
             logger.info("new thread")
+            # add new client handler thread
             self.threads.append(threading.Thread(target=self.__client_handler))
             self.threads[-1].start()
 
