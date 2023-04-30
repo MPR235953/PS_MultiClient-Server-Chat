@@ -24,13 +24,15 @@ class Client(QObject):
             logger.info("Set up web stuff")
             self.__server_ip = server_ip
             self.__server_port = int(server_port)
-            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             logger.info("Try to connect to server")
-            self.__client_socket.connect((self.__server_ip, self.__server_port))
-            self.__connection = True
+            self.__client_socket.sendto(str.encode('data'), (self.__server_ip, self.__server_port))
+            message_from_server = self.__client_socket.recvfrom(CONFIG['max_connect_requests'])
+            logger.info(message_from_server.decode("utf-8"))
+            '''self.__connection = True
             self.__listener = threading.Thread(target=self.__listen)
             self.__listener.start()
-            logger.info("Connected to server - start listen ")
+            logger.info("Connected to server - start listen ")'''
         except Exception as e: return str(e)
 
     def disconnect(self):

@@ -32,7 +32,6 @@ class Server(QObject):
             self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
             self.__server_socket.bind((self.__server_ip, self.__server_port))
-            self.__server_socket.listen(CONFIG['max_connect_requests'])
 
             self.__connection_listener = threading.Thread(target=self.__connection_listen)
             self.__connection_listener.start()
@@ -42,7 +41,7 @@ class Server(QObject):
 
     def stop(self):
         self.__server_down = True
-        diss_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        diss_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         diss_socket.connect((self.__server_ip, self.__server_port))
         diss_socket.close()
         for cli in self.__client_list:
@@ -62,16 +61,18 @@ class Server(QObject):
     def __connection_listen(self):
         logger.info("Server is listening for connection")
         while True:
-            connection, client_address = self.__server_socket.accept()
-            logger.info("accepted")
+            client_message, client_address = self.__server_socket.recvfrom(CONFIG['max_connect_requests'])
+            logger.info(client_message.decode("utf-8"))
+            self.__server_socket.sendto(client_message, client_address)
+
+            '''logger.info("accepted")
             if self.__server_down:
                 logger.info("Server finished listen for connection")
                 return
             id = self.__get_id()
             client_data = {
                 "id": id,
-                "address": client_address,
-                "connection": connection
+                "address": client_address
             }
             if id is None:  # when server is full
                 client_data['connection'].sendall(utils.SERVER_BUSY_KEY.encode('utf-8'))
@@ -83,7 +84,7 @@ class Server(QObject):
             logger.info("new thread")
             # add new client handler thread
             self.threads.append(threading.Thread(target=self.__client_handler))
-            self.threads[-1].start()
+            self.threads[-1].start()'''
 
     def __client_handler(self):
         client = self.__client_list[-1]
