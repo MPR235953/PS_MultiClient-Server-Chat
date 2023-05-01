@@ -1,5 +1,7 @@
+import ipaddress
 import socket
 import threading
+import netifaces
 
 import time
 
@@ -29,10 +31,10 @@ class Server(QObject):
 
             self.__server_ip = server_ip
             self.__server_port = int(server_port)
-            self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
+            self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  # enable broadcast
             self.__server_socket.bind((self.__server_ip, self.__server_port))
-            self.__server_socket.listen(CONFIG['max_connect_requests'])
 
             self.__connection_listener = threading.Thread(target=self.__connection_listen)
             self.__connection_listener.start()
@@ -42,11 +44,11 @@ class Server(QObject):
 
     def stop(self):
         self.__server_down = True
-        diss_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        diss_socket.connect((self.__server_ip, self.__server_port))
+        diss_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        diss_socket.sendto("".encode("UTF-8"), (self.__server_ip, self.__server_port))
         diss_socket.close()
         for cli in self.__client_list:
-            cli['connection'].sendall(utils.SERVER_DISCONNECT_KEY.encode('utf-8'))
+            self.__server_socket.sendto(utils.SERVER_DISCONNECT_KEY.encode("UTF-8"), cli['address'])
         self.sig_update_clients.emit(str("DEL,ALL"))
         self.__client_list = []
         self.__server_socket.close()
@@ -62,47 +64,36 @@ class Server(QObject):
     def __connection_listen(self):
         logger.info("Server is listening for connection")
         while True:
-            connection, client_address = self.__server_socket.accept()
-            logger.info("accepted")
+            data, client_address = self.__server_socket.recvfrom(utils.CONFIG['max_transfer'])
+            decoded_data = data.decode('utf-8')
             if self.__server_down:
                 logger.info("Server finished listen for connection")
                 return
-            id = self.__get_id()
-            client_data = {
-                "id": id,
-                "address": client_address,
-                "connection": connection
-            }
-            if id is None:  # when server is full
-                client_data['connection'].sendall(utils.SERVER_BUSY_KEY.encode('utf-8'))
-                self.sig_update_terminal.emit(str("Client - {}:{} want to join, but no id available\n").format(client_address[0], client_address[1]))
-                continue
-            self.__client_list.append(client_data)
-            self.sig_update_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
-            self.sig_update_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
-            logger.info("new thread")
-            # add new client handler thread
-            self.threads.append(threading.Thread(target=self.__client_handler))
-            self.threads[-1].start()
 
-    def __client_handler(self):
-        client = self.__client_list[-1]
-        logger.info("Server is ready to transfer data")
-        while True:
-            time.sleep(CONFIG['transfer_delay'])
-            data = client['connection'].recv(utils.CONFIG['max_transfer'])
-            if self.__server_down:
-                logger.info("Server finished listen for transfer")
-                return
-            decoded_data = data.decode('utf-8')
-            if decoded_data != utils.CLIENT_DISCONNECT_KEY:
-                logger.info("Data: | {} | from client: | {} |".format(decoded_data, '#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
-                for cli in self.__client_list:
-                    cli['connection'].sendall(('#' + str(client['id']) + ' ' + decoded_data).encode('utf-8'))
-            else:
-                logger.info("Data: | {} | from client: | {} |".format(decoded_data,'#' + str(client['id']) + ' ' + client['address'][0] + ' ' + str(client['address'][1])))
+            if client_address not in [client['address'] for client in self.__client_list]:  # in case of a new client
+                id = self.__get_id()
+                if id is None:  # when server is full
+                    if decoded_data == utils.CLIENT_DISCONNECT_KEY: continue  # to prevent 2 the same messages
+                    logger.info("Server busy")
+                    self.__server_socket.sendto(utils.SERVER_BUSY_KEY.encode('utf-8'), client_address)
+                    self.sig_update_terminal.emit(str("Client - {}:{} want to join, but no id available\n").format(client_address[0],client_address[1]))
+                    continue
+                else:
+                    client_data = {
+                        "id": id,
+                        "address": client_address,
+                    }
+                    self.__client_list.append(client_data)
+                    self.sig_update_terminal.emit(str("Client - #{} {}:{} joined\n").format(id, client_address[0], client_address[1]))
+                    self.sig_update_clients.emit(str("ADD,#{} {}:{}\n").format(id, client_address[0], client_address[1]))
+
+            if decoded_data == utils.CLIENT_DISCONNECT_KEY:  # delete client from list if he wants to disconnect
+                for client in self.__client_list:
+                    if client_address == client['address']:
+                        self.__client_list.remove(client)
+                        break
                 self.sig_update_terminal.emit(str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
                 self.sig_update_clients.emit(str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
-                self.__client_list.remove(client)
-                logger.info(self.__client_list)
-                break
+            else:
+                for client in self.__client_list:   # send to all
+                    self.__server_socket.sendto(data, client['address'])

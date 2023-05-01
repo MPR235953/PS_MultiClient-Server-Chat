@@ -24,9 +24,8 @@ class Client(QObject):
             logger.info("Set up web stuff")
             self.__server_ip = server_ip
             self.__server_port = int(server_port)
-            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             logger.info("Try to connect to server")
-            self.__client_socket.connect((self.__server_ip, self.__server_port))
             self.__connection = True
             self.__listener = threading.Thread(target=self.__listen)
             self.__listener.start()
@@ -46,7 +45,7 @@ class Client(QObject):
     def __listen(self):
         while self.__connection:
             try:
-                recv = self.__client_socket.recv(CONFIG['max_transfer'])
+                recv, addr = self.__client_socket.recvfrom(utils.CONFIG['max_transfer'])
                 recv_len = len(recv)
                 if recv_len > 0:
                     if recv.decode("utf-8") == utils.SERVER_DISCONNECT_KEY:
