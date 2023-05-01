@@ -25,7 +25,7 @@ class ClientGUI(QMainWindow):
 
     def __setup_GUI(self):
 
-        self.setWindowTitle("Client")
+        self.setWindowTitle("Client - UDP")
         self.setGeometry(1000, 50, self.__width, self.__height)
 
         self.__set_conn()

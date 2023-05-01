@@ -66,6 +66,11 @@ class Server(QObject):
         while True:
             data, client_address = self.__server_socket.recvfrom(utils.CONFIG['max_transfer'])
             decoded_data = data.decode('utf-8')
+
+            if decoded_data == utils.CLIENT_TEST_KEY:  # ignore if test connection and send back
+                self.__server_socket.sendto(data, client_address)
+                continue
+
             if self.__server_down:
                 logger.info("Server finished listen for connection")
                 return
@@ -95,5 +100,7 @@ class Server(QObject):
                 self.sig_update_terminal.emit(str("Client - #{} {}:{} left\n").format(client['id'], client['address'][0], client['address'][1]))
                 self.sig_update_clients.emit(str("DEL,#{} {}:{}\n").format(client['id'], client['address'][0], client['address'][1]))
             else:
+                if decoded_data == utils.CLIENT_CONNECT_KEY: continue   # ignore if connect info
+                cli_id = [client['id'] for client in self.__client_list if client['address'] == client_address][0]  # get id client who send message
                 for client in self.__client_list:   # send to all
-                    self.__server_socket.sendto(data, client['address'])
+                    self.__server_socket.sendto(('#' + str(cli_id) + ' ' + decoded_data).encode("UTF-8"), client['address'])

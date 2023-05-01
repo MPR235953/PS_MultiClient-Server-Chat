@@ -25,11 +25,21 @@ class Client(QObject):
             self.__server_ip = server_ip
             self.__server_port = int(server_port)
             self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+            # check connection with UDP server
+            test_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            test_socket.settimeout(utils.CONFIG['timeout'])
+            test_socket.sendto(str.encode(utils.CLIENT_TEST_KEY), (self.__server_ip, self.__server_port))
+            _, _ = test_socket.recvfrom(utils.CONFIG['max_transfer'])
+            test_socket.close()
+
             logger.info("Try to connect to server")
             self.__connection = True
             self.__listener = threading.Thread(target=self.__listen)
             self.__listener.start()
+            self.__client_socket.sendto(str.encode(utils.CLIENT_CONNECT_KEY), (self.__server_ip, self.__server_port))
             logger.info("Connected to server - start listen ")
+        except TimeoutError: return str("Server not ready")
         except Exception as e: return str(e)
 
     def disconnect(self):
@@ -49,7 +59,7 @@ class Client(QObject):
                 recv_len = len(recv)
                 if recv_len > 0:
                     if recv.decode("utf-8") == utils.SERVER_DISCONNECT_KEY:
-                        self.sig_handle_event.emit("Disconnected from server", False)
+                        self.sig_handle_event.emit("Server is down", False)
                         break
                     elif recv.decode("utf-8") == utils.SERVER_BUSY_KEY:
                         self.sig_handle_event.emit("Server is busy", True)

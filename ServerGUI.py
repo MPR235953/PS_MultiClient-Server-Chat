@@ -27,7 +27,7 @@ class ServerGUI(QMainWindow):
 
     def __setup_GUI(self):
 
-        self.setWindowTitle("Server")
+        self.setWindowTitle("Server - UDP")
         self.setGeometry(0, 50, self.__width, self.__height)
 
         self.__set_conn()
