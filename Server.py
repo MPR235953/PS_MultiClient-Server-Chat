@@ -31,9 +31,14 @@ class Server(QObject):
 
             self.__server_ip = server_ip
             self.__server_port = int(server_port)
-            self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
-            self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  # enable broadcast
+            #self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            #self.__server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # to reuse address
+
+            # Set the socket to multicast mode
+            self.__mcast_addr = '224.1.1.1'
+            self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            self.__server_socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+
             self.__server_socket.bind((self.__server_ip, self.__server_port))
 
             self.__connection_listener = threading.Thread(target=self.__connection_listen)
@@ -102,5 +107,4 @@ class Server(QObject):
             else:
                 if decoded_data == utils.CLIENT_CONNECT_KEY: continue   # ignore if connect info
                 cli_id = [client['id'] for client in self.__client_list if client['address'] == client_address][0]  # get id client who send message
-                for client in self.__client_list:   # send to all
-                    self.__server_socket.sendto(('#' + str(cli_id) + ' ' + decoded_data).encode("UTF-8"), client['address'])
+                self.__server_socket.sendto(('#' + str(cli_id) + ' ' + decoded_data).encode("UTF-8"), (self.__mcast_addr, self.__server_port))

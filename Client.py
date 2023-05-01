@@ -24,14 +24,19 @@ class Client(QObject):
             logger.info("Set up web stuff")
             self.__server_ip = server_ip
             self.__server_port = int(server_port)
-            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            #self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+            self.__client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            self.__client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+            self.__client_socket.bind(('224.1.1.1', self.__server_port))
 
             # check connection with UDP server
-            test_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            test_socket.settimeout(utils.CONFIG['timeout'])
-            test_socket.sendto(str.encode(utils.CLIENT_TEST_KEY), (self.__server_ip, self.__server_port))
-            _, _ = test_socket.recvfrom(utils.CONFIG['max_transfer'])
-            test_socket.close()
+            #test_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            #test_socket.settimeout(utils.CONFIG['timeout'])
+            #test_socket.sendto(str.encode(utils.CLIENT_TEST_KEY), (self.__server_ip, self.__server_port))
+            #_, _ = test_socket.recvfrom(utils.CONFIG['max_transfer'])
+            #test_socket.close()
 
             logger.info("Try to connect to server")
             self.__connection = True
